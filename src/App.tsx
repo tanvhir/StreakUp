@@ -36,6 +36,7 @@ export default function App() {
       const saved = localStorage.getItem('studystreak_user');
       return saved ? JSON.parse(saved) : null;
     } catch (e) {
+      localStorage.removeItem('studystreak_user');
       return null;
     }
   });
