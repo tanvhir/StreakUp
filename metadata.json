@@ -1,0 +1,6 @@
+{
+  "name": "StreakUp - Mentorship & Progress Tracker",
+  "description": "A minimal mentorship study streak tracker with 5AM cycle reset, 9h/+10m streak rules, admin feedback, peer thread discussions, and InfinityFree MySQL auto-setup export.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
