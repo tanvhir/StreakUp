@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { User, Notice, UserStreakInfo, ThreadPost } from '../types';
-import { Flame, Bell, CheckCircle2, MessageSquare, Megaphone, ShieldCheck, Sparkles, X } from 'lucide-react';
+import { Flame, Bell, CheckCircle2, MessageSquare, Megaphone, ShieldCheck, Sparkles, X, Database } from 'lucide-react';
 
 interface NavbarProps {
   currentUser: User | null;
@@ -8,6 +8,7 @@ interface NavbarProps {
   leaderboard?: UserStreakInfo[];
   threads?: ThreadPost[];
   onOpenAuth: () => void;
+  onOpenSetup?: () => void;
   activeTab: string;
   setActiveTab: (tab: string) => void;
 }
@@ -18,21 +19,19 @@ export const Navbar: React.FC<NavbarProps> = ({
   leaderboard = [],
   threads = [],
   onOpenAuth,
+  onOpenSetup,
   activeTab,
   setActiveTab,
 }) => {
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState<number>(() => {
-    // Check if user has unread notifications saved
     const lastRead = localStorage.getItem('studystreak_notif_read');
     return lastRead ? 0 : 1;
   });
 
-  // Calculate notifications for currentUser
   const myLeaderboardInfo = currentUser ? leaderboard.find(u => u.userId === currentUser.id) : null;
   const myMentorFeedback = myLeaderboardInfo?.mentorFeedback;
 
-  // Find comments on user's threads
   const myThreads = currentUser ? threads.filter(t => t.userId === currentUser.id) : [];
   const myThreadComments = myThreads.flatMap(t => 
     t.comments.filter(c => c.userId !== currentUser?.id).map(c => ({

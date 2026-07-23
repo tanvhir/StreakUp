@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { User, StudyLog, Notice } from '../types';
-import { ShieldCheck, Megaphone, CheckCircle2 } from 'lucide-react';
+import { ShieldCheck, Megaphone, CheckCircle2, Database, Sparkles } from 'lucide-react';
 import { ProfileView } from './ProfileView';
 
 interface AdminViewProps {
@@ -10,6 +10,7 @@ interface AdminViewProps {
   onUpdateNotice: (content: string, active: boolean) => Promise<void>;
   onUpdateProfile?: (name: string, bio: string, targetHours: number, avatar: string) => Promise<void>;
   onLogout?: () => void;
+  onOpenSetup?: () => void;
 }
 
 export const AdminView: React.FC<AdminViewProps> = ({
@@ -19,6 +20,7 @@ export const AdminView: React.FC<AdminViewProps> = ({
   onUpdateNotice,
   onUpdateProfile = async () => {},
   onLogout = () => {},
+  onOpenSetup,
 }) => {
   const [noticeContent, setNoticeContent] = useState<string>(notice?.content || '');
   const [noticeActive, setNoticeActive] = useState<boolean>(notice?.active ?? true);
@@ -76,6 +78,34 @@ export const AdminView: React.FC<AdminViewProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Database Auto Setup Shortcut Banner */}
+      {onOpenSetup && (
+        <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200/90 rounded-3xl p-4 sm:p-5 shadow-xs flex items-center justify-between gap-3">
+          <div className="flex items-center space-x-3 min-w-0">
+            <div className="p-2.5 bg-emerald-500 text-white rounded-2xl shrink-0 shadow-sm">
+              <Database className="w-5 h-5" />
+            </div>
+            <div className="min-w-0">
+              <h3 className="text-xs sm:text-sm font-extrabold text-slate-900 truncate">
+                InfinityFree DB & PHP Auto Setup
+              </h3>
+              <p className="text-[11px] font-medium text-slate-600 truncate">
+                Configure database connection & export PHP scripts
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={onOpenSetup}
+            className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black rounded-xl shadow-xs transition-all cursor-pointer active:scale-95 shrink-0 flex items-center space-x-1.5"
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Open Setup</span>
+          </button>
+        </div>
+      )}
 
       {/* Top Site Announcement Banner Form */}
       <div className="bg-white border border-slate-200/90 rounded-3xl p-4 sm:p-6 shadow-xs space-y-4">

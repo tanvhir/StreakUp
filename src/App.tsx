@@ -95,6 +95,10 @@ export default function App() {
 
   useEffect(() => {
     loadData();
+    const search = window.location.search;
+    if (search.includes('setup=true') || search.includes('install=true')) {
+      setIsSetupModalOpen(true);
+    }
   }, [currentUser?.id]);
 
   // Handle Login & Save Persistence
@@ -225,6 +229,7 @@ export default function App() {
         leaderboard={leaderboard}
         threads={threads}
         onOpenAuth={() => setIsAuthModalOpen(true)}
+        onOpenSetup={() => setIsSetupModalOpen(true)}
         activeTab={activeTab}
         setActiveTab={setActiveTab}
       />
@@ -285,6 +290,7 @@ export default function App() {
             onUpdateNotice={handleUpdateNotice}
             onUpdateProfile={handleUpdateProfile}
             onLogout={handleLogout}
+            onOpenSetup={() => setIsSetupModalOpen(true)}
           />
         )}
       </main>
