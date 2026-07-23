@@ -68,7 +68,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       title: `${c.userName} commented on your thread`,
       body: `"${c.content}"`,
       type: 'thread',
-      actionTab: 'community',
+      actionTab: 'threads',
     });
   });
 

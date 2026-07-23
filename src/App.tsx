@@ -61,29 +61,31 @@ export default function App() {
   // Initial Load
   const loadData = async () => {
     try {
-      const statusRes = await checkStatus();
-      setDbConfig({
-        dbHost: statusRes.dbHost || 'sqlxxx.epizy.com',
-        dbName: statusRes.dbName || 'studystreak_db',
-        dbUser: statusRes.dbUser || 'epiz_user',
-      });
+      const statusRes = await checkStatus().catch(() => null);
+      if (statusRes) {
+        setDbConfig({
+          dbHost: statusRes.dbHost || 'sqlxxx.epizy.com',
+          dbName: statusRes.dbName || 'studystreak_db',
+          dbUser: statusRes.dbUser || 'epiz_user',
+        });
+      }
 
-      const noticeRes = await fetchNotice();
-      if (noticeRes.notice) setNotice(noticeRes.notice);
+      const noticeRes = await fetchNotice().catch(() => null);
+      if (noticeRes?.notice) setNotice(noticeRes.notice);
 
-      const lbRes = await fetchLeaderboard();
-      if (lbRes.leaderboard) setLeaderboard(lbRes.leaderboard);
+      const lbRes = await fetchLeaderboard().catch(() => null);
+      if (lbRes?.leaderboard) setLeaderboard(lbRes.leaderboard);
 
-      const threadRes = await fetchThreads();
-      if (threadRes.threads) setThreads(threadRes.threads);
+      const threadRes = await fetchThreads().catch(() => null);
+      if (threadRes?.threads) setThreads(threadRes.threads);
 
       if (currentUser) {
-        const userLogsRes = await fetchUserLogs(currentUser.id);
-        if (userLogsRes.logs) setUserLogs(userLogsRes.logs);
+        const userLogsRes = await fetchUserLogs(currentUser.id).catch(() => null);
+        if (userLogsRes?.logs) setUserLogs(userLogsRes.logs);
 
         if (currentUser.role === 'admin') {
-          const adminMsgsRes = await fetchAdminMessages();
-          if (adminMsgsRes.messages) setAdminMessages(adminMsgsRes.messages);
+          const adminMsgsRes = await fetchAdminMessages().catch(() => null);
+          if (adminMsgsRes?.messages) setAdminMessages(adminMsgsRes.messages);
         }
       }
     } catch (err) {
