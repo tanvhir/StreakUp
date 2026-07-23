@@ -1,0 +1,39 @@
+name: 🚀 Build and Deploy to InfinityFree
+
+on:
+  push:
+    branches:
+      - main # Aponar branch jodi 'master' hoy, tobe ekhane master likhben
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. GitHub Repository theke code niye asha
+      - name: 🚚 Get latest code
+        uses: actions/checkout@v4
+
+      # 2. Bun Runtime set up kora
+      - name: ⚙️ Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      # 3. Dependencies Install kora
+      - name: 📦 Install dependencies
+        run: bun install
+
+      # 4. Project Build kora
+      - name: 🏗️ Build project
+        run: bun run build
+
+      # 5. Build kora static file gulo FTP-r maddhome upload kora
+      - name: 📂 Sync files via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: ftpupload.net       # <--- Ekhane aponar FTP Hostname-ti boshaben (Jemon: ftpupload.net ba ://infinityfree.com)
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./dist/          # Vite er default build folder
+          server-dir: ./htdocs/       # InfinityFree er public folder
