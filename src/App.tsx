@@ -64,10 +64,14 @@ export default function App() {
       const statusRes = await checkStatus().catch(() => null);
       if (statusRes) {
         setDbConfig({
-          dbHost: statusRes.dbHost || 'sqlxxx.epizy.com',
-          dbName: statusRes.dbName || 'studystreak_db',
-          dbUser: statusRes.dbUser || 'epiz_user',
+          dbHost: statusRes.dbHost || 'sql305.infinityfree.com',
+          dbName: statusRes.dbName || 'if0_42480076_streakup',
+          dbUser: statusRes.dbUser || '',
         });
+
+        if (statusRes.configured === false) {
+          setIsSetupModalOpen(true);
+        }
       }
 
       const noticeRes = await fetchNotice().catch(() => null);
@@ -210,9 +214,20 @@ export default function App() {
   };
 
   // Auto Setup Save
-  const handleSaveSetup = async (dbHost: string, dbName: string, dbUser: string) => {
-    await configureDatabase({ dbHost, dbName, dbUser });
-    setDbConfig({ dbHost, dbName, dbUser });
+  const handleSaveSetup = async (setupData: {
+    dbHost: string;
+    dbName: string;
+    dbUser: string;
+    dbPass: string;
+    adminName: string;
+    adminEmail: string;
+    adminPassword?: string;
+  }) => {
+    const res = await configureDatabase(setupData);
+    setDbConfig({ dbHost: setupData.dbHost, dbName: setupData.dbName, dbUser: setupData.dbUser });
+    if (res?.user) {
+      handleLoginSuccess(res.user);
+    }
     await loadData();
   };
 

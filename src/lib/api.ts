@@ -7,7 +7,15 @@ export async function checkStatus() {
   return res.json();
 }
 
-export async function configureDatabase(data: { dbHost: string; dbName: string; dbUser: string }) {
+export async function configureDatabase(data: {
+  dbHost: string;
+  dbName: string;
+  dbUser: string;
+  dbPass?: string;
+  adminName?: string;
+  adminEmail?: string;
+  adminPassword?: string;
+}) {
   const res = await fetch(`${API_BASE}/setup`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

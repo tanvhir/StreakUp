@@ -81,10 +81,10 @@ const defaultStudents: User[] = [
 ];
 
 const initialStore: StoreData = {
-  configured: true,
-  dbHost: 'sqlxxx.epizy.com',
-  dbName: 'studystreak_db',
-  dbUser: 'epiz_user',
+  configured: false,
+  dbHost: 'sql305.infinityfree.com',
+  dbName: 'if0_42480076_streakup',
+  dbUser: '',
   users: [defaultAdmin, ...defaultStudents],
   logs: [
     {
@@ -225,14 +225,45 @@ app.get('/api/status', (req: Request, res: Response) => {
 });
 
 app.post('/api/setup', (req: Request, res: Response) => {
-  const { dbHost, dbName, dbUser } = req.body;
+  const { dbHost, dbName, dbUser, adminName, adminEmail, adminPassword } = req.body;
   const store = readStore();
   store.configured = true;
   if (dbHost) store.dbHost = dbHost;
   if (dbName) store.dbName = dbName;
   if (dbUser) store.dbUser = dbUser;
+
+  let createdAdminUser: User | null = null;
+
+  if (adminEmail && adminName) {
+    const cleanEmail = adminEmail.trim().toLowerCase();
+    const existingAdminIdx = store.users.findIndex(u => u.email.toLowerCase() === cleanEmail || u.role === 'admin');
+
+    if (existingAdminIdx !== -1) {
+      store.users[existingAdminIdx].name = adminName.trim();
+      store.users[existingAdminIdx].email = cleanEmail;
+      store.users[existingAdminIdx].role = 'admin';
+      createdAdminUser = store.users[existingAdminIdx];
+    } else {
+      createdAdminUser = {
+        id: `usr_admin_${Date.now()}`,
+        name: adminName.trim(),
+        email: cleanEmail,
+        role: 'admin',
+        avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(adminName)}`,
+        bio: 'Lead Mentor & Coach',
+        targetHoursPerDay: 10,
+        createdAt: new Date().toISOString(),
+      };
+      store.users.unshift(createdAdminUser);
+    }
+  }
+
   writeStore(store);
-  res.json({ success: true, message: 'Database setup configured successfully!' });
+  res.json({
+    success: true,
+    message: 'Database & Admin account configured successfully!',
+    user: createdAdminUser,
+  });
 });
 
 // Authentication
