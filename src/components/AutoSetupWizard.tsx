@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Database, CheckCircle2, Copy, Check, Server, Sparkles, ShieldCheck, Download, Code2, AlertTriangle } from 'lucide-react';
+import { Database, CheckCircle2, Copy, Check, Server, Sparkles, ShieldCheck, Download, Code2, AlertTriangle, Globe } from 'lucide-react';
 import { generateConfigPhp, generateInstallPhp, generateApiPhp, SQL_SCHEMA } from '../lib/phpExport';
+import { deployToFtp } from '../lib/api';
 
 interface AutoSetupWizardProps {
   isOpen: boolean;
@@ -28,9 +29,13 @@ export const AutoSetupWizard: React.FC<AutoSetupWizardProps> = ({
   const [dbUser, setDbUser] = useState(currentConfig?.dbUser || '');
   const [dbPass, setDbPass] = useState('');
 
-  const [adminName, setAdminName] = useState('Tanvir (Mentor)');
+  const [adminName, setAdminName] = useState('Tanvhir Hasan');
   const [adminEmail, setAdminEmail] = useState('mailtanvir26@gmail.com');
-  const [adminPassword, setAdminPassword] = useState('admin123');
+  const [adminPassword, setAdminPassword] = useState('');
+
+  const [ftpHost, setFtpHost] = useState('ftpupload.net');
+  const [liveUrl, setLiveUrl] = useState('http://streakup.infinityfreeapp.com');
+  const [autoDeployMode, setAutoDeployMode] = useState(true);
 
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState('');
@@ -54,23 +59,62 @@ export const AutoSetupWizard: React.FC<AutoSetupWizardProps> = ({
     }
 
     try {
-      await onSaveSetup({
-        dbHost,
-        dbName,
-        dbUser,
-        dbPass,
-        adminName,
-        adminEmail,
-        adminPassword,
-      });
-      setSuccess('Database setup & Admin Mentor account initialized successfully!');
-      setTimeout(() => {
-        setSuccess('');
-        onClose();
-      }, 1500);
+      if (autoDeployMode) {
+        setSuccess('⚙️ Step 1/3: Compiling React app assets for production...');
+        const deployRes = await deployToFtp({
+          ftpHost,
+          ftpUser: dbUser,
+          ftpPass: dbPass,
+          dbHost,
+          dbName,
+          dbUser,
+          dbPass,
+          adminName,
+          adminEmail,
+          adminPassword,
+          liveUrl,
+        });
+
+        setSuccess(`🚀 SUCCESS! App built, uploaded, and live database initialized! visit: ${liveUrl}`);
+        
+        // Also save local state
+        await onSaveSetup({
+          dbHost,
+          dbName,
+          dbUser,
+          dbPass,
+          adminName,
+          adminEmail,
+          adminPassword,
+        });
+
+        setTimeout(() => {
+          setSuccess('');
+          onClose();
+          // Optionally redirect them to their live url or open it
+          if (liveUrl) {
+            window.open(liveUrl, '_blank');
+          }
+        }, 3000);
+      } else {
+        await onSaveSetup({
+          dbHost,
+          dbName,
+          dbUser,
+          dbPass,
+          adminName,
+          adminEmail,
+          adminPassword,
+        });
+        setSuccess('Database setup & Admin Mentor account initialized successfully!');
+        setTimeout(() => {
+          setSuccess('');
+          onClose();
+        }, 1500);
+      }
     } catch (err: any) {
       console.error(err);
-      setErrorMsg(err.message || 'Auto Setup failed. Please check your credentials.');
+      setErrorMsg(err.message || 'Auto Setup & Deployment failed. Please check your credentials.');
     } finally {
       setLoading(false);
     }
@@ -263,6 +307,62 @@ export const AutoSetupWizard: React.FC<AutoSetupWizardProps> = ({
                 </div>
               </div>
 
+              {/* Section 3: One-Click FTP Deployment */}
+              <div className="space-y-3 pt-2 bg-slate-50 p-4 rounded-2xl border border-slate-200">
+                <div className="flex items-center justify-between border-b border-slate-200 pb-2">
+                  <div className="flex items-center space-x-1.5 text-xs font-black text-slate-900">
+                    <Globe className="w-4 h-4 text-teal-600" />
+                    <span>3. Automatic Live FTP Deployment (Recommended)</span>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={autoDeployMode}
+                      onChange={e => setAutoDeployMode(e.target.checked)}
+                      className="sr-only peer"
+                    />
+                    <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600"></div>
+                  </label>
+                </div>
+
+                {autoDeployMode && (
+                  <div className="space-y-3 text-xs">
+                    <p className="text-[11px] text-slate-600 leading-relaxed">
+                      This will automatically build your React app, write all required PHP files, connect to InfinityFree via FTP, upload files to <code>htdocs/</code>, and run the remote database auto-installer. <strong>Zero manual effort required!</strong>
+                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">FTP Hostname</label>
+                        <input
+                          type="text"
+                          required={autoDeployMode}
+                          value={ftpHost}
+                          onChange={e => setFtpHost(e.target.value)}
+                          placeholder="ftpupload.net"
+                          className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs font-mono focus:outline-none focus:ring-2 focus:ring-emerald-500 font-bold text-slate-950"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">Your Live Site Domain (URL)</label>
+                        <input
+                          type="text"
+                          required={autoDeployMode}
+                          value={liveUrl}
+                          onChange={e => setLiveUrl(e.target.value)}
+                          placeholder="http://streakup.infinityfreeapp.com"
+                          className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs font-mono focus:outline-none focus:ring-2 focus:ring-emerald-500 font-bold text-slate-950"
+                        />
+                      </div>
+                    </div>
+                    <div className="bg-emerald-50/50 p-2.5 rounded-xl border border-emerald-100 text-[11px] text-slate-700 flex items-start space-x-2">
+                      <span className="text-emerald-600 font-extrabold shrink-0">💡 Note:</span>
+                      <span>On InfinityFree, your FTP username and password are exactly the same as your MySQL Database Username and Password. We will automatically use them to authorize deployment.</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+
               {errorMsg && (
                 <div className="p-3 bg-rose-50 text-rose-800 text-xs font-bold rounded-xl border border-rose-200 flex items-center space-x-2">
                   <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
@@ -280,10 +380,16 @@ export const AutoSetupWizard: React.FC<AutoSetupWizardProps> = ({
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-extrabold text-xs rounded-2xl shadow-lg shadow-emerald-600/25 flex items-center justify-center space-x-2 cursor-pointer active:scale-98 transition-all"
+                className="w-full py-3.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-extrabold text-xs rounded-2xl shadow-lg shadow-emerald-600/25 flex items-center justify-center space-x-2 cursor-pointer active:scale-98 transition-all disabled:opacity-50"
               >
                 <Server className="w-4 h-4" />
-                <span>{loading ? 'Initializing Setup...' : 'Run Auto Setup & Save Credentials'}</span>
+                <span>
+                  {loading
+                    ? 'Running Auto Setup & Deployment...'
+                    : autoDeployMode
+                    ? '🔥 Run Auto Setup & Deploy Live App!'
+                    : 'Run Local Auto Setup'}
+                </span>
               </button>
             </form>
           ) : (

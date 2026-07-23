@@ -2,6 +2,8 @@ import express, { Request, Response } from 'express';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import * as ftp from 'basic-ftp';
+import { generateConfigPhp, generateInstallPhp, generateApiPhp } from './src/lib/phpExport.js';
 import { User, StudyLog, MentorFeedback, Notice, ThreadPost, ThreadComment, UserStreakInfo } from './src/types';
 import { calculateUserStreakHistory, getStudyCycleDate, formatMinutesToHM, getDaysDifference } from './src/lib/streak';
 
@@ -264,6 +266,108 @@ app.post('/api/setup', (req: Request, res: Response) => {
     message: 'Database & Admin account configured successfully!',
     user: createdAdminUser,
   });
+});
+
+app.post('/api/deploy', async (req: Request, res: Response) => {
+  const {
+    ftpHost,
+    ftpUser,
+    ftpPass,
+    dbHost,
+    dbName,
+    dbUser,
+    dbPass,
+    adminName,
+    adminEmail,
+    adminPassword,
+    liveUrl,
+  } = req.body;
+
+  if (!ftpHost || !ftpUser || !ftpPass) {
+    return res.status(400).json({ error: 'FTP Host, Username, and Password are required.' });
+  }
+  if (!dbHost || !dbName || !dbUser) {
+    return res.status(400).json({ error: 'MySQL Host, DB Name, and DB User are required.' });
+  }
+
+  try {
+    const distPath = path.join(__dirname, 'dist');
+    
+    // Force rebuild first to ensure any client modifications are packed
+    const { execSync } = await import('child_process');
+    console.log('Rebuilding application for deployment...');
+    try {
+      execSync('npm run build');
+    } catch (buildErr: any) {
+      console.error('React application build failed:', buildErr);
+      return res.status(500).json({ error: `Frontend build failed: ${buildErr.message || buildErr}` });
+    }
+
+    // Write PHP files into the dist/ directory
+    fs.writeFileSync(path.join(distPath, 'config.php'), generateConfigPhp(dbHost, dbName, dbUser, dbPass));
+    fs.writeFileSync(path.join(distPath, 'install.php'), generateInstallPhp(dbHost, dbName, dbUser, dbPass, adminName, adminEmail, adminPassword || 'admin123'));
+    fs.writeFileSync(path.join(distPath, 'api.php'), generateApiPhp());
+
+    console.log('PHP files successfully generated inside dist/');
+
+    // Connect via FTP
+    const client = new ftp.Client();
+    client.ftp.verbose = true;
+
+    try {
+      await client.access({
+        host: ftpHost,
+        user: ftpUser,
+        password: ftpPass,
+        secure: false, // Plain FTP or implicit TLS fallback for maximum compatibility with InfinityFree
+      });
+
+      console.log('Connected to FTP server. Ensuring htdocs directory exists...');
+      await client.ensureDir('htdocs');
+
+      console.log('Uploading all files from dist/ to htdocs/ via FTP...');
+      await client.uploadFromDir(distPath);
+      console.log('FTP upload completed!');
+    } finally {
+      client.close();
+    }
+
+    // Trigger installation on their live URL
+    let installTriggered = false;
+    let installResponse = '';
+    if (liveUrl) {
+      let cleanUrl = liveUrl.trim();
+      if (!cleanUrl.startsWith('http://') && !cleanUrl.startsWith('https://')) {
+        cleanUrl = 'http://' + cleanUrl;
+      }
+      if (cleanUrl.endsWith('/')) {
+        cleanUrl = cleanUrl.slice(0, -1);
+      }
+
+      const targetInstallUrl = `${cleanUrl}/install.php?auto=1`;
+      console.log(`Sending GET request to auto-installer: ${targetInstallUrl}`);
+      try {
+        const fetchRes = await fetch(targetInstallUrl, { method: 'GET' });
+        installResponse = await fetchRes.text();
+        installTriggered = true;
+        console.log('Auto-install triggered successfully, response:', installResponse);
+      } catch (err: any) {
+        console.error('Failed to trigger live installer:', err.message);
+        installResponse = `Deploy successful but could not auto-trigger database installation: ${err.message}. Please visit ${cleanUrl}/install.php in your browser to complete database setup.`;
+      }
+    }
+
+    res.json({
+      success: true,
+      message: 'App has been built and successfully deployed live to InfinityFree via FTP!',
+      installTriggered,
+      installResponse: installResponse.substring(0, 500),
+    });
+
+  } catch (err: any) {
+    console.error('Deployment error:', err);
+    res.status(500).json({ error: `Deployment failed: ${err.message}` });
+  }
 });
 
 // Authentication
