@@ -184,12 +184,19 @@ export default function App() {
   // Threads
   const handleCreateThread = async (title: string, content: string) => {
     if (!currentUser) return;
-    await createThread({
-      userId: currentUser.id,
-      title,
-      content,
-    });
-    await loadData();
+    console.log('handleCreateThread called with:', { title, content, userId: currentUser.id });
+    try {
+      await createThread({
+        userId: currentUser.id,
+        title,
+        content,
+      });
+      console.log('Thread created successfully, reloading data');
+      await loadData();
+    } catch (err) {
+      console.error('Error in handleCreateThread:', err);
+      throw err;
+    }
   };
 
   const handleVoteThread = async (threadId: string, voteType: 'upvote' | 'downvote') => {

@@ -226,10 +226,13 @@ export async function fetchThreads(userId?: string): Promise<{ threads: ThreadPo
 }
 
 export async function createThread(payload: { userId: string; title?: string; content: string }) {
-  return callApi('/threads', {
+  console.log('Creating thread with payload:', payload);
+  const response = await callApi('/threads', {
     method: 'POST',
     body: JSON.stringify(payload),
   });
+  console.log('Thread creation response:', response);
+  return response;
 }
 
 export async function voteThread(threadId: string, payload: { userId: string; voteType: 'upvote' | 'downvote' }) {

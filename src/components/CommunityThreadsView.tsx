@@ -24,6 +24,7 @@ export const CommunityThreadsView: React.FC<CommunityThreadsViewProps> = ({
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const [activeCommentThreadId, setActiveCommentThreadId] = useState<string | null>(null);
   const [commentText, setCommentText] = useState('');
@@ -41,13 +42,15 @@ export const CommunityThreadsView: React.FC<CommunityThreadsViewProps> = ({
       return;
     }
 
+    setError(null);
     setLoading(true);
     try {
       await onCreateThread(title, content);
       setTitle('');
       setContent('');
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      console.error('Thread creation error:', err);
+      setError(err?.message || 'Failed to create thread. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -322,6 +325,11 @@ export const CommunityThreadsView: React.FC<CommunityThreadsViewProps> = ({
               className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500 transition-all resize-none"
             />
           </div>
+          {error && (
+            <div className="text-xs text-red-600 bg-red-50 border border-red-200 rounded-lg p-2">
+              {error}
+            </div>
+          )}
           <div className="flex justify-end">
             <button
               type="submit"
