@@ -1,0 +1,155 @@
+{
+  "configured": true,
+  "dbHost": "sql305.infinityfree.com",
+  "dbName": "if0_42480076_streakup",
+  "dbUser": "if0_42480076",
+  "users": [
+    {
+      "id": "usr_admin",
+      "name": "Tanvir Hasan",
+      "email": "mailtanvir26@gmail.com",
+      "username": "admin",
+      "role": "admin",
+      "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200",
+      "bio": "Lead Mentor & Coach",
+      "targetHoursPerDay": 10,
+      "createdAt": "2026-07-23T14:14:42.622Z"
+    },
+    {
+      "id": "usr_rahim",
+      "name": "Rahim Ahmed",
+      "email": "rahim@gmail.com",
+      "username": "rahim",
+      "role": "student",
+      "avatar": "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&q=80&w=200",
+      "bio": "Medical Aspirant | Hard Worker",
+      "targetHoursPerDay": 9,
+      "createdAt": "2026-07-23T14:14:42.622Z"
+    },
+    {
+      "id": "usr_sumaiya",
+      "name": "Sumaiya Islam",
+      "email": "sumaiya@gmail.com",
+      "username": "sumaiya",
+      "role": "student",
+      "avatar": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=200",
+      "bio": "BUET Target | Daily Grinder",
+      "targetHoursPerDay": 8,
+      "createdAt": "2026-07-23T14:14:42.622Z"
+    },
+    {
+      "id": "usr_tanim",
+      "name": "Tanim Chowdhury",
+      "email": "tanim@gmail.com",
+      "username": "tanim",
+      "role": "student",
+      "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200",
+      "bio": "Dhaka University Science Target",
+      "targetHoursPerDay": 8,
+      "createdAt": "2026-07-23T14:14:42.622Z"
+    }
+  ],
+  "logs": [
+    {
+      "id": "log_1",
+      "userId": "usr_rahim",
+      "userName": "Rahim Ahmed",
+      "cycleDate": "2026-07-21",
+      "studyMinutes": 480,
+      "studyHoursFormatted": "8h 0m",
+      "privateMessage": "Sir today physics vectors and chemistry organic completed.",
+      "loggedAt": "2026-07-21T14:14:42.622Z",
+      "streakCountAtLog": 1,
+      "meetsStreakCriteria": true
+    },
+    {
+      "id": "log_2",
+      "userId": "usr_rahim",
+      "userName": "Rahim Ahmed",
+      "cycleDate": "2026-07-22",
+      "studyMinutes": 540,
+      "studyHoursFormatted": "9h 0m",
+      "privateMessage": "Sir solve 200 math problems!",
+      "loggedAt": "2026-07-22T14:14:42.622Z",
+      "streakCountAtLog": 2,
+      "meetsStreakCriteria": true
+    },
+    {
+      "id": "log_3",
+      "userId": "usr_sumaiya",
+      "userName": "Sumaiya Islam",
+      "cycleDate": "2026-07-22",
+      "studyMinutes": 600,
+      "studyHoursFormatted": "10h 0m",
+      "privateMessage": "Sir revision completed for biology chapter 4.",
+      "loggedAt": "2026-07-22T14:14:42.622Z",
+      "streakCountAtLog": 1,
+      "meetsStreakCriteria": true
+    }
+  ],
+  "mentorFeedbacks": [
+    {
+      "id": "fb_1",
+      "userId": "usr_rahim",
+      "adminId": "usr_admin",
+      "adminName": "Tanvir (Mentor)",
+      "content": "Excellent progress Rahim! Keep target at 9+ hours daily for medical question bank.",
+      "updatedAt": "2026-07-23T14:14:42.622Z"
+    },
+    {
+      "id": "fb_2",
+      "userId": "usr_sumaiya",
+      "adminId": "usr_admin",
+      "adminName": "Tanvir (Mentor)",
+      "content": "Superb 10 hours session! Keep up the incredible consistency!",
+      "updatedAt": "2026-07-23T14:14:42.622Z"
+    }
+  ],
+  "notice": {
+    "id": "notice_1",
+    "content": "📢 Welcome Students! 5:00 AM cycle update: Log study hours before 5 AM daily to keep your streak alive! Target 9+ hours for instant streak level-up!",
+    "active": true,
+    "updatedAt": "2026-07-23T14:14:42.622Z",
+    "updatedBy": "Admin Mentor"
+  },
+  "threads": [
+    {
+      "id": "th_1",
+      "userId": "usr_rahim",
+      "userName": "Rahim Ahmed",
+      "userAvatar": "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&q=80&w=200",
+      "userRole": "student",
+      "title": "How do you stay focused during night sessions?",
+      "content": "Hello everyone! I study from 10 PM to 4 AM. Sometimes I feel sleepy around 2 AM. Any tips from fellow group members?",
+      "likesCount": 3,
+      "likedBy": [
+        "usr_sumaiya",
+        "usr_admin",
+        "usr_tanim"
+      ],
+      "comments": [
+        {
+          "id": "cm_1",
+          "threadId": "th_1",
+          "userId": "usr_sumaiya",
+          "userName": "Sumaiya Islam",
+          "userAvatar": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=200",
+          "userRole": "student",
+          "content": "Try 45-min Pomodoro + 5 min walking! Also drink cold water.",
+          "createdAt": "2026-07-23T14:14:42.622Z"
+        },
+        {
+          "id": "cm_2",
+          "threadId": "th_1",
+          "userId": "usr_admin",
+          "userName": "Tanvir (Mentor)",
+          "userAvatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200",
+          "userRole": "admin",
+          "content": "Good question Rahim. Ensure 6-7 hours sleep during daytime or early morning. Never sacrifice core sleep!",
+          "createdAt": "2026-07-23T14:14:42.622Z"
+        }
+      ],
+      "createdAt": "2026-07-23T14:14:42.622Z"
+    }
+  ]
+}

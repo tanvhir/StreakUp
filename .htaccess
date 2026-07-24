@@ -1,0 +1,31 @@
+# Force PHP execution for .php files
+<FilesMatch "\.php$">
+    SetHandler application/x-httpd-php
+</FilesMatch>
+
+# Enable directory index
+DirectoryIndex index.php index.html
+
+# Rewrite rules for React app
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    
+    # Don't rewrite for actual files or directories
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+    
+    # Don't rewrite for PHP files
+    RewriteCond %{REQUEST_URI} \.php$
+    RewriteRule ^ - [L]
+    
+    # If installed, serve index.html for all other requests
+    RewriteRule ^(.*)$ index.php [L]
+</IfModule>
+
+# Set proper MIME types
+AddType text/css .css
+AddType application/javascript .js
+AddType image/svg+xml .svg
+AddType font/woff .woff
+AddType font/woff2 .woff2
