@@ -953,6 +953,33 @@ try {
                         sendResponse(['error' => 'User ID and comment content required'], 400);
                     }
                     
+                    // Validate that thread exists
+                    $threadCheck = $conn->prepare("SELECT id FROM threads WHERE id = ?");
+                    $threadCheck->bind_param('s', $id);
+                    $threadCheck->execute();
+                    $threadResult = $threadCheck->get_result();
+                    
+                    if ($threadResult->num_rows === 0) {
+                        sendResponse(['error' => 'Thread not found'], 404);
+                    }
+                    
+                    // Validate parent comment if provided
+                    if ($parentCommentId !== null) {
+                        $parentCheck = $conn->prepare("SELECT id, thread_id FROM thread_comments WHERE id = ?");
+                        $parentCheck->bind_param('s', $parentCommentId);
+                        $parentCheck->execute();
+                        $parentResult = $parentCheck->get_result();
+                        
+                        if ($parentResult->num_rows === 0) {
+                            sendResponse(['error' => 'Parent comment not found'], 404);
+                        }
+                        
+                        $parentComment = $parentResult->fetch_assoc();
+                        if ($parentComment['thread_id'] !== $id) {
+                            sendResponse(['error' => 'Parent comment does not belong to this thread'], 400);
+                        }
+                    }
+                    
                     // Get user
                     $stmt = $conn->prepare("SELECT * FROM users WHERE id = ?");
                     $stmt->bind_param('s', $userId);
@@ -970,21 +997,43 @@ try {
                     $columnCheck = $conn->query("SHOW COLUMNS FROM thread_comments LIKE 'parent_comment_id'");
                     $hasParentColumn = $columnCheck->num_rows > 0;
                     
-                    if ($hasParentColumn) {
+                    // Check if voting columns exist
+                    $votingCheck = $conn->query("SHOW COLUMNS FROM thread_comments LIKE 'upvotes_count'");
+                    $hasVotingColumns = $votingCheck->num_rows > 0;
+                    
+                    if ($hasParentColumn && $hasVotingColumns) {
+                        $stmt = $conn->prepare("INSERT INTO thread_comments (id, thread_id, parent_comment_id, user_id, user_name, user_avatar, user_role, content, upvotes_count, downvotes_count, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, 0, NOW(), NOW())");
+                        $stmt->bind_param('sssssssss', $commentId, $id, $parentCommentId, $userId, $user['name'], $user['avatar'], $user['role'], $content);
+                    } elseif ($hasParentColumn) {
                         $stmt = $conn->prepare("INSERT INTO thread_comments (id, thread_id, parent_comment_id, user_id, user_name, user_avatar, user_role, content, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())");
                         $stmt->bind_param('ssssssss', $commentId, $id, $parentCommentId, $userId, $user['name'], $user['avatar'], $user['role'], $content);
+                    } elseif ($hasVotingColumns) {
+                        $stmt = $conn->prepare("INSERT INTO thread_comments (id, thread_id, user_id, user_name, user_avatar, user_role, content, upvotes_count, downvotes_count, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, 0, 0, NOW(), NOW())");
+                        $stmt->bind_param('ssssssss', $commentId, $id, $userId, $user['name'], $user['avatar'], $user['role'], $content);
                     } else {
                         $stmt = $conn->prepare("INSERT INTO thread_comments (id, thread_id, user_id, user_name, user_avatar, user_role, content, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, NOW())");
                         $stmt->bind_param('sssssss', $commentId, $id, $userId, $user['name'], $user['avatar'], $user['role'], $content);
                     }
-                    $stmt->execute();
                     
-                    // Get created comment
+                    if (!$stmt->execute()) {
+                        sendResponse(['error' => 'Failed to create comment: ' . $conn->error], 500);
+                    }
+                    
+                    // Get created comment with all fields
                     $stmt = $conn->prepare("SELECT * FROM thread_comments WHERE id = ?");
                     $stmt->bind_param('s', $commentId);
                     $stmt->execute();
                     $result = $stmt->get_result();
                     $comment = $result->fetch_assoc();
+                    
+                    // Add default values if columns don't exist
+                    if (!$hasVotingColumns) {
+                        $comment['upvotes_count'] = 0;
+                        $comment['downvotes_count'] = 0;
+                    }
+                    if (!$hasParentColumn) {
+                        $comment['parent_comment_id'] = null;
+                    }
                     
                     sendResponse(['success' => true, 'comment' => $comment]);
                 }
